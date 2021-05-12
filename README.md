@@ -74,3 +74,12 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 In the folder backend
 npm install express cors mongoose dotenv
 npm install -g nodemon
+
+run the command nodemon server
+It runs in the port 5000 we have the local server
+
+### Run storybook
+
+I created a button component as example of how we can use storybook
+run the command npm run storybook
+It runs in the port 6000
