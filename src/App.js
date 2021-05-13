@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 import Jumbotron from "./components/atomos/jumbotron/jumbotron";
 import Button from "./components/atomos/boton/boton";
@@ -8,9 +8,11 @@ import Alert from "./components/moleculas/alert/alert";
 import Table from "./components/organismos/table/table";
 import Content from "./pages/content";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import * as actions from "./actions/actions";
 import moment from "moment";
 
-const App = ({ parentCallback }) => {
+const App = () => {
   const [show, setShow] = useState(false);
   const [name, setName] = useState("Default");
   const [number, setNumber] = useState("Default");
@@ -19,11 +21,11 @@ const App = ({ parentCallback }) => {
   const [resAdd, setResAdd] = useState(false);
   const [resMessage, setResMessage] = useState("Message");
   const [resTheme, setResTheme] = useState("alert alert-success");
-  const [records, setRecords] = useState([]);
   const [filtrando, setFiltrando] = useState(false);
   const [recordFiltrado, setRecordFiltrado] = useState([]);
   const [isDisabled, setIsDisabled] = useState(true);
   let form = document.getElementById("addForm");
+  const dispatch = useDispatch();
 
   useEffect(() => {
     requestUser();
@@ -44,15 +46,23 @@ const App = ({ parentCallback }) => {
       case "date":
         setBirthdate(inputValue);
         break;
+      default:
+        setName("Default");
+
+        setNumber("Default");
+
+        setMail("Default");
+
+        setBirthdate("Default");
     }
     if (
-      name != "Default" &&
+      name !== "Default" &&
       name.length > 2 &&
-      number != "Default" &&
+      number !== "Default" &&
       number.length > 2 &&
       number.length <= 14 &&
       mail.length > 2 &&
-      mail != "Default"
+      mail !== "Default"
     ) {
       setIsDisabled(false);
       form.classList.remove("was-validated");
@@ -122,25 +132,29 @@ const App = ({ parentCallback }) => {
         return res.json();
       })
       .then((res) => {
-        setRecords(res);
+        dispatch(actions.setUsers(res));
         setFiltrando(false);
       })
       .catch((error) => {
         console.log("Error:", error);
       });
   };
-
+  const usersState = useSelector((state) => state.usersReducer.users);
+  if (!usersState) {
+    return <h1>Loading...</h1>;
+  }
   const filtrarRecord = (e) => {
     var textFilter = e.target.value.toLowerCase();
     setFiltrando(true);
-    var recordFilter = records.filter(
+    var recordFilter = usersState.filter(
       (records) =>
         records.name.toLowerCase().includes(textFilter) ||
         records.number.toLowerCase().includes(textFilter)
     );
     setRecordFiltrado(recordFilter);
   };
-  let userRecords = !filtrando ? records : recordFiltrado;
+
+  let userRecords = !filtrando ? usersState : recordFiltrado;
   let yesterday = moment().subtract(1, "days").format().split("T")[0];
   return (
     <Router>

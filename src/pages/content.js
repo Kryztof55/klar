@@ -17,7 +17,10 @@ import EditIcon from "@material-ui/icons/Edit";
 import Modal from "../components/organismos/modal/modal";
 import Input from "../components/atomos/input/input";
 import Alert from "../components/moleculas/alert/alert";
-import { NavLink, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import * as actions from "../actions/actions";
+
 import moment from "moment";
 
 const useStyles = makeStyles({
@@ -50,9 +53,13 @@ const Content = (props) => {
   const [isDisabled, setIsDisabled] = useState(true);
   let form = document.getElementById("addForm");
   const history = useHistory();
+  const usersState = useSelector((state) => state.usersReducer.users);
+  const dispatch = useDispatch();
+
   useEffect(() => {
     requestUser();
   }, []);
+
   const requestUser = () => {
     fetch(`http://localhost:5000/records/${id}`, {
       method: "GET",
@@ -95,15 +102,23 @@ const Content = (props) => {
       case "date":
         setBirthdate(inputValue);
         break;
+      default:
+        setName("Default");
+
+        setNumber("Default");
+
+        setMail("Default");
+
+        setBirthdate("Default");
     }
     if (
-      name != "Default" &&
+      name !== "Default" &&
       name.length > 2 &&
-      number != "Default" &&
+      number !== "Default" &&
       number.length > 2 &&
       number.length <= 14 &&
       mail.length > 2 &&
-      mail != "Default"
+      mail !== "Default"
     ) {
       setIsDisabled(false);
       form.classList.remove("was-validated");
@@ -116,6 +131,7 @@ const Content = (props) => {
   const closeModal = () => setShow(false);
 
   const deleteRecord = (item) => {
+    dispatch(actions.setUsers(usersState.filter((el) => el._id !== item)));
     fetch(`http://localhost:5000/records/${item}`, {
       method: "DELETE",
       headers: {

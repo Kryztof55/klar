@@ -1,3 +1,18 @@
+### run server
+
+In the folder backend
+npm install express cors mongoose dotenv
+npm install -g nodemon
+
+run the command nodemon server
+It runs in the port 5000 we have the local server
+
+### Run storybook
+
+I created a button component as example of how we can use storybook
+run the command npm run storybook
+It runs in the port 6000
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
@@ -68,18 +83,3 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-
-### run server
-
-In the folder backend
-npm install express cors mongoose dotenv
-npm install -g nodemon
-
-run the command nodemon server
-It runs in the port 5000 we have the local server
-
-### Run storybook
-
-I created a button component as example of how we can use storybook
-run the command npm run storybook
-It runs in the port 6000
