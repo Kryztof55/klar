@@ -42,13 +42,13 @@ router.route("/:id").delete((req, res) => {
     .catch((err) => res.status(400).json("Error: " + err));
 });
 
-router.route("/update/:id").post((req, res) => {
+router.route("/update/:id").patch((req, res) => {
   Record.findById(req.params.id)
     .then((record) => {
       record.name = req.body.name;
       record.number = Number(req.body.number);
       record.mail = req.body.mail;
-      record.avatr = req.body.avatr;
+      record.avatar = req.body.avatar;
 
       record
         .save()

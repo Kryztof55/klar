@@ -8,7 +8,6 @@ const recordSchema = new Schema(
     number: { type: String, required: true },
     mail: { type: String, required: true },
     birthday: { type: Date, required: false },
-    avatar: { type: String, required: false },
   },
   {
     timestamps: true,

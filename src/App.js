@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 
 import Jumbotron from "./components/atomos/jumbotron/jumbotron";
 import Button from "./components/atomos/boton/boton";
@@ -7,101 +7,110 @@ import Modal from "./components/organismos/modal/modal";
 import Alert from "./components/moleculas/alert/alert";
 import Table from "./components/organismos/table/table";
 import Content from "./pages/content";
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import moment from "moment";
 
-const App = () => {
+const App = ({ parentCallback }) => {
   const [show, setShow] = useState(false);
-  const [name, setName] = useState();
-  const [number, setNumber] = useState();
-  const [mail, setMail] = useState();
-  const [birthdate, setBirthdate] = useState();
-  const [avatar, setAvatar] = useState("Defaul");
+  const [name, setName] = useState("Default");
+  const [number, setNumber] = useState("Default");
+  const [mail, setMail] = useState("Default");
+  const [birthday, setBirthdate] = useState("");
   const [resAdd, setResAdd] = useState(false);
   const [resMessage, setResMessage] = useState("Message");
   const [resTheme, setResTheme] = useState("alert alert-success");
   const [records, setRecords] = useState([]);
   const [filtrando, setFiltrando] = useState(false);
   const [recordFiltrado, setRecordFiltrado] = useState([]);
+  const [isDisabled, setIsDisabled] = useState(true);
+  let form = document.getElementById("addForm");
+
   useEffect(() => {
-    peticionRecord();
+    requestUser();
   }, []);
 
-  const onChangeName = (e) => {
-    setName(e.target.value);
-  };
-  const onChangenumber = (e) => {
-    setNumber(e.target.value);
-  };
-  const onChangeMail = (e) => {
-    setMail(e.target.value);
+  const validationForm = (e, type) => {
+    let inputValue = e.target.value;
+    switch (type) {
+      case "name":
+        setName(inputValue);
+        break;
+      case "number":
+        setNumber(inputValue);
+        break;
+      case "mail":
+        setMail(inputValue);
+        break;
+      case "date":
+        setBirthdate(inputValue);
+        break;
+    }
+    if (
+      name != "Default" &&
+      name.length > 2 &&
+      number != "Default" &&
+      number.length > 2 &&
+      number.length <= 14 &&
+      mail.length > 2 &&
+      mail != "Default"
+    ) {
+      setIsDisabled(false);
+      form.classList.remove("was-validated");
+    } else {
+      setIsDisabled(true);
+      form.classList.add("was-validated");
+    }
   };
 
-  const onChangeDate = (e) => {
-    setBirthdate(e.target.value);
-  };
-
-  const onChangeUpload = (e) => {
-    console.log(e.target.files[0]);
-    let file = e.target.files[0];
-    let reader = new FileReader();
-    reader.onload = function () {
-      setAvatar(reader.result);
-    };
-    reader.readAsDataURL(file);
-  };
   const openModal = () => {
     setShow(true);
   };
 
-  const closeModal = () => setShow(false);
-  const send = (e) => {
-    e.preventDefault();
-    let form = document.getElementById("addForm");
-
-    if (
-      name === undefined ||
-      number === undefined ||
-      mail === undefined ||
-      birthdate === undefined
-    ) {
-      form.classList.add("was-validated");
-    } else {
-      const record = {
-        name: name,
-        number: number,
-        mail: mail,
-        birthdate: birthdate,
-        avatar: avatar,
-      };
-      console.log(record);
-      fetch("http://localhost:5000/records/add", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(record),
-      })
-        .then((res) => {
-          console.log(res.json());
-          setResAdd(true);
-          setResMessage("Record added succesfully");
-          peticionRecord();
-          setTimeout(() => {
-            closeModal();
-            form.reset();
-            setResAdd(false);
-          }, 1000);
-        })
-        .catch((error) => {
-          console.log("Error:", error.json());
-          setResAdd(true);
-          setResMessage("Error");
-          setResTheme("alert alert-danger");
-        });
-    }
+  const closeModal = () => {
+    form.reset();
+    form.classList.remove("was-validated");
+    setShow(false);
   };
-  const peticionRecord = () => {
+  const send = (e) => {
+    let form = document.getElementById("addForm");
+    e.preventDefault();
+    const record = {
+      name: name,
+      number: number,
+      mail: mail,
+      birthday: birthday,
+    };
+    fetch("http://localhost:5000/records/add", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(record),
+    })
+      .then((res) => {
+        setResAdd(true);
+        setResMessage("User Record added succesfully");
+        requestUser();
+        setTimeout(() => {
+          closeModal();
+          form.reset();
+          form.classList.remove("was-validated");
+          setResAdd(false);
+          setName("Default");
+          setNumber("Default");
+          setMail("Default");
+          setBirthdate("");
+        }, 1000);
+      })
+      .catch((error) => {
+        console.log("Error:", error.json());
+        setResAdd(true);
+        setResMessage("Error");
+        setResTheme("alert alert-danger");
+      });
+  };
+  const requestUser = () => {
     fetch("http://localhost:5000/records", {
       method: "GET",
       headers: {
@@ -120,36 +129,19 @@ const App = () => {
         console.log("Error:", error);
       });
   };
-  const deleteRecord = (item) => {
-    fetch(`http://localhost:5000/records/${item}`, {
-      method: "DELETE",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-    })
-      .then((res) => {
-        peticionRecord();
-      })
-      .catch((error) => {
-        console.log("Error:", error);
-      });
-  };
-  const edit = () => {
-    console.log("edit");
-  };
+
   const filtrarRecord = (e) => {
     var textFilter = e.target.value.toLowerCase();
     setFiltrando(true);
     var recordFilter = records.filter(
       (records) =>
         records.name.toLowerCase().includes(textFilter) ||
-        records.number.toLowerCase().includes(textFilter) ||
-        records.mail.toLowerCase().includes(textFilter)
+        records.number.toLowerCase().includes(textFilter)
     );
     setRecordFiltrado(recordFilter);
   };
   let userRecords = !filtrando ? records : recordFiltrado;
+  let yesterday = moment().subtract(1, "days").format().split("T")[0];
   return (
     <Router>
       <Switch>
@@ -191,48 +183,45 @@ const App = () => {
               <form className="mb-3" id="addForm" encType="multipart/form-data">
                 <Input
                   inputType="text"
+                  maxLength="200"
                   className="form-control mb-2"
                   placeholder="Full Name"
                   required={true}
-                  onChange={onChangeName}
+                  onChange={(e) => validationForm(e, "name")}
                 />
                 <Input
-                  inputType="text"
+                  inputType="number"
+                  max="14"
                   className="form-control mb-2"
-                  placeholder="Phone number"
+                  placeholder="Phone number max 14 "
                   required={true}
-                  onChange={onChangenumber}
+                  onChange={(e) => validationForm(e, "number")}
                 />
                 <Input
-                  inputType="text"
+                  inputType="email"
+                  maxLength="255"
                   className="form-control mb-2"
                   placeholder="Email"
                   required={true}
-                  onChange={onChangeMail}
+                  onChange={(e) => validationForm(e, "mail")}
                 />
                 <Input
+                  max={yesterday}
                   inputType="date"
                   className="form-control mb-2"
                   placeholder="Birth date"
-                  required={true}
-                  onChange={onChangeDate}
-                />
-                <Input
-                  inputType="file"
-                  className="form-control mb-2"
-                  placeholder="Upload image"
                   required={false}
-                  onChange={onChangeUpload}
-                ></Input>
+                  onChange={(e) => validationForm(e, "date")}
+                />
                 <Button
                   typeButton="submit"
                   className="btn btn-primary d-flex align-items-center"
-                  text="Guardar"
+                  text="Add"
                   action={send}
-                  disabled={false}
+                  disabled={isDisabled}
                 ></Button>
               </form>
-              {resAdd ?? (
+              {resAdd && (
                 <div className="container">
                   <Alert theme={resTheme} text={resMessage}></Alert>
                 </div>
